@@ -1,2 +1,2 @@
-ALTER TABLE staging.user_order_log
-ADD COLUMN status text;
+alter table staging.user_order_log
+add column status text;
