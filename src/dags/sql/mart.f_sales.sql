@@ -8,6 +8,7 @@ select
     city_id, 
     quantity, 
     case
+        -- делаю отрицательным только payment_amount, так как по формуле так total_revenue выйдет отрицательным
         when status = 'refunded' then -payment_amount
         else payment_amount
     end as payment_amount 
