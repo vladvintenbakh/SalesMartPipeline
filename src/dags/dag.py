@@ -100,6 +100,9 @@ def upload_data_to_staging(filename, date, pg_table, pg_schema, ti):
 
     postgres_hook = PostgresHook(postgres_conn_id)
     engine = postgres_hook.get_sqlalchemy_engine()
+    
+    # решил пока не добавлять идемпотентность так как это опционально
+    
     row_count = df.to_sql(pg_table, engine, schema=pg_schema, if_exists='append', index=False)
     print(f'{row_count} row(s) inserted')
 

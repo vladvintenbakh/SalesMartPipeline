@@ -1,3 +1,5 @@
+-- решил пока не добавлять идемпотентность так как это опционально
+
 insert into mart.f_sales (date_id, item_id, customer_id, city_id, quantity, payment_amount)
 select 
     dc.date_id,
