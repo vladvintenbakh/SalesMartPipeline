@@ -1,3 +1,5 @@
+-- решил пока не добавлять идемпотентность так как это опционально
+
 insert into mart.f_customer_retention (
     new_customers_count,
     returning_customers_count,
@@ -21,7 +23,7 @@ with customers as (
 	from mart.f_sales fs
 	join mart.d_calendar dc
 	using(date_id)
-	where week_of_year = date_part('week', '2025-09-02'::DATE) -- replace with Airflow current date
+	where week_of_year = date_part('week', '{{ ds }}'::date)
 ),
 new_customers as (
 	select customer_id

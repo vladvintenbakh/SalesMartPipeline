@@ -167,6 +167,13 @@ with DAG(
         sql="sql/mart.f_sales.sql",
         parameters={"date": {business_dt}}
     )
+    
+    update_f_customer_retention = PostgresOperator(
+        task_id='update_f_customer_retention',
+        postgres_conn_id=postgres_conn_id,
+        sql='sql/mart.f_customer_retention.sql',
+        parameters={'date': {business_dt}}
+    )
 
     (
             generate_report
@@ -175,4 +182,5 @@ with DAG(
             >> upload_user_order_inc
             >> [update_d_item_table, update_d_city_table, update_d_customer_table]
             >> update_f_sales
+            >> update_f_customer_retention
     )
