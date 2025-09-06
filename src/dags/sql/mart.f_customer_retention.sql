@@ -1,5 +1,3 @@
--- решил пока не добавлять идемпотентность так как это опционально
-
 insert into mart.f_customer_retention (
     new_customers_count,
     returning_customers_count,

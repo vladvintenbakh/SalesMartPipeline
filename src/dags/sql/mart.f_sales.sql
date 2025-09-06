@@ -1,5 +1,3 @@
--- решил пока не добавлять идемпотентность так как это опционально
-
 insert into mart.f_sales (date_id, item_id, customer_id, city_id, quantity, payment_amount, status)
 select 
     dc.date_id,
@@ -8,7 +6,6 @@ select
     city_id, 
     quantity, 
     case
-        -- делаю отрицательным только payment_amount, так как по формуле так total_revenue выйдет отрицательным
         when status = 'refunded' then -payment_amount
         else payment_amount
     end as payment_amount,
