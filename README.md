@@ -1,33 +1,78 @@
-# Проект 3-го спринта
+# Sales Mart Pipeline — Airflow + Postgres
 
-### Описание
-Репозиторий предназначен для сдачи проекта 3-го спринта
+Airflow DAG `sales_mart` that pulls daily order increments from an HTTP API, stages them in Postgres, and updates a simple star schema:
+**dims:** `d_item`, `d_customer`, `d_city`, `d_calendar` • **facts:** `f_sales`, `f_customer_retention`.
 
-### Как работать с репозиторием
-1. В вашем GitHub-аккаунте автоматически создастся репозиторий `de-project-sprint-3` после того, как вы привяжете свой GitHub-аккаунт на Платформе.
-2. Скопируйте репозиторий на свой локальный компьютер, в качестве пароля укажите ваш `Access Token` (получить нужно на странице [Personal Access Tokens](https://github.com/settings/tokens)):
-	* `git clone https://github.com/{{ username }}/de-project-sprint-3.git`
-3. Перейдите в директорию с проектом: 
-	* `cd de-project-sprint-3`
-4. Выполните проект и сохраните получившийся код в локальном репозитории:
-	* `git add .`
-	* `git commit -m 'my best commit'`
-5. Обновите репозиторий в вашем GutHub-аккаунте:
-	* `git push origin main`
+---
 
-### Структура репозитория
-1. Папка `migrations` хранит файлы миграции. Файлы миграции должны быть с расширением `.sql` и содержать SQL-скрипт обновления базы данных.
-2. В папке `src` хранятся все необходимые исходники: 
-    * Папка `dags` содержит DAG's Airflow.
-
-### Как запустить контейнер
-Запустите локально команду:
-
+## Project Layout
 ```
-docker run -d --rm -p 3000:3000 -p 15432:5432 --name=de-project-sprint-3-server cr.yandex/crp1r8pht0n0gl25aug1/project-sprint-3:latest
+de-project-sprint-3-main/
+├─ migrations/
+│  ├─ 01_DDL_add_status_column.sql
+│  └─ 02_DDL_create_customer_retention.sql
+└─ src/dags/
+   ├─ dag.py
+   └─ sql/
+      ├─ mart.d_city.sql
+      ├─ mart.d_customer.sql
+      ├─ mart.d_item.sql
+      ├─ mart.f_sales.sql
+      └─ mart.f_customer_retention.sql
 ```
 
-После того как запустится контейнер, у вас будут доступны:
-1. Visual Studio Code
-2. Airflow
-3. Database
+## Quick Setup
+
+**Airflow connections**
+- Postgres: `postgresql_de`
+- HTTP API: `http_conn_id` (put `{"api_key":"<KEY>"}` in *Extras*).  
+  Edit `nickname`, `cohort`, and `postgres_conn_id` in `src/dags/dag.py`.
+
+**DB**
+```sql
+CREATE SCHEMA IF NOT EXISTS staging;
+CREATE SCHEMA IF NOT EXISTS mart;
+```
+Ensure `mart.d_calendar(date_id, date_actual, week_of_year, ...)` exists.
+
+**Python deps**
+`apache-airflow>=2`, `apache-airflow-providers-postgres`, `psycopg2-binary`, `pandas`, `requests`.
+
+## Run
+
+Place files so Airflow sees:
+```
+$AIRFLOW_HOME/dags/dag.py
+$AIRFLOW_HOME/dags/sql/*.sql
+```
+Start & unpause:
+```bash
+airflow db init
+airflow webserver
+airflow scheduler
+```
+
+Backfill example:
+```bash
+airflow dags backfill -s 2025-09-01 -e 2025-09-06 sales_mart
+```
+
+## Notes
+
+- `f_sales`: negates `payment_amount` when `status='refunded'`.
+- `f_customer_retention`: weekly per `item_id` (new/returning/refunded and revenues).
+- Staging expects: `uniq_id`, `date_time`, `item_*`, `customer_*`, `city_*`, `quantity`, `payment_amount`, `status`.
+
+## Migrations
+```sql
+\i migrations/01_DDL_add_status_column.sql
+\i migrations/02_DDL_create_customer_retention.sql
+```
+
+## Troubleshooting
+- 401/403 → check HTTP extras/headers.
+- Missing tables → run migrations & ensure `d_calendar`.
+- Permission issues → Postgres creds & worker file access.
+
+## License
+MIT (or your org’s license)
