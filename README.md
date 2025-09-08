@@ -28,7 +28,4 @@ Ensure `mart.d_calendar(date_id, date_actual, week_of_year, ...)` exists.
 ## Troubleshooting
 - 401/403 → check HTTP extras/headers.
 - Missing tables → run migrations & ensure `d_calendar` is filled correctly.
-- Permission issues → Postgres creds & worker file access.
-
-## License
-MIT (or your org’s license)
+- Permission issues → Postgres credentials & worker file access.
