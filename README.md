@@ -1,4 +1,4 @@
-# Sales Mart Pipeline — Airflow + Postgres
+# Sales Mart Pipeline
 
 Airflow DAG `sales_mart` that pulls daily order increments from an HTTP API, stages them in Postgres, and updates a simple star schema:
 - **Dimensions:** `d_item`, `d_customer`, `d_city`, `d_calendar`
